@@ -16,9 +16,12 @@ namespace ServiceDesk.Api.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<IEnumerable<Equipment>> GetAll()
-            => await _context.Equipment.ToListAsync();
+       [HttpGet]
+        public async Task<ActionResult<IEnumerable<Equipment>>> GetAll()
+        {
+            Console.WriteLine(">>> API VERSION 2: GetAll() called");
+            return await _context.Equipment.ToListAsync();
+        }
 
 
         [HttpGet("{id:int}")]
