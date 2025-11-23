@@ -31,6 +31,8 @@ WORKDIR /app
 
 # Копируем опубликованные файлы
 COPY --from=build /app/publish .
+# Health-check контейнера: каждые 30 секунд проверяем /api/health
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -qO- http://localhost:8080/api/health || exit 1
 
 # Точка входа
 ENTRYPOINT ["dotnet", "ServiceDesk.Api.dll"]
