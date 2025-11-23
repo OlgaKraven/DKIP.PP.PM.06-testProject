@@ -8,43 +8,68 @@
 - InMemory-базой данных для учебных/тестовых целей;
 - автогенерацией Swagger/OpenAPI-документации.
 
-> Проект может использоваться как стартовый шаблон для производственной практики по разработке и сопровождению веб-сервисов и информационных систем.
+> Проект может использоваться как стартовый шаблон для производственной практики по ПМ.06 Сопровождение информационных систем
 
 ---
 
-## 1. Стек технологий
 
-- **Язык:** C#
-- **Платформа:** .NET **9.0** (`net9.0`)
-- **Web-фреймворк:** ASP.NET Core Web API
-- **ORM:** Entity Framework Core 8
-  - `Microsoft.EntityFrameworkCore`
-  - `Microsoft.EntityFrameworkCore.InMemory`
-- **Документация API:** Swashbuckle / Swagger (`Swashbuckle.AspNetCore`)
+## 1. Основные возможности
+
+### Реализованные сущности:
+- **Equipment** — учёт оборудования  
+- **ServiceRequest** — заявки на обслуживание  
+- **Health** — проверка работоспособности API
+
+### Функциональность:
+- Полный CRUD для Equipment  
+- Полный CRUD для ServiceRequests  
+- Проверка связи с БД  
+- Валидация входных данных  
+- Автодокументация API через Swagger  
+- PostgreSQL + EF Core  
+- Асинхронные операции (`async/await`)
 
 ---
 
-## 2. Структура проекта
+## 2. Стек технологий
 
-```text
+| Компонент | Используемые технологии |
+|----------|--------------------------|
+| Backend | C#, ASP.NET Core Web API |
+| ORM | Entity Framework Core |
+| База данных | PostgreSQL (Npgsql) |
+| Документация | Swagger (Swashbuckle) |
+| Средства разработки | .NET 9, Visual Studio / VS Code |
+
+---
+
+## 3. Структура проекта
+
+```
 ServiceDesk.Api/
-│   Program.cs                 # Точка входа, настройка сервисов и middleware
-│   ServiceDesk.Api.csproj    # Файл проекта (.NET 9, подключения пакетов)
-│   appsettings.json          # Общие настройки логирования и хостинга
+│   Program.cs
+│   ServiceDesk.Api.csproj
+│   appsettings.json
 │   appsettings.Development.json
 │
 ├── Controllers/
-│   └── EquipmentController.cs # REST-контроллер для сущности Equipment
+│   ├── EquipmentController.cs
+│   ├── ServiceRequestsController.cs
+│   └── HealthController.cs
 │
 ├── Data/
-│   └── AppDbContext.cs       # Класс контекста EF Core (InMemory БД)
+│   └── AppDbContext.cs
 │
 └── Models/
-    ├── Equipment.cs          # Модель оборудования
-    └── ServiceRequest.cs     # Модель заявки на обслуживание (пока без контроллера)
+    ├── Equipment.cs
+    └── ServiceRequest.cs
 ```
 
-### 2.1. Модель Equipment
+---
+
+## 4. Модели
+
+### Equipment
 ```csharp
 public class Equipment
 {
@@ -52,11 +77,11 @@ public class Equipment
     public string InventoryNumber { get; set; } = "";
     public string Type { get; set; } = "";
     public string Room { get; set; } = "";
-    public string Status { get; set; } = "Работает";
+    public string Status { get; set; } = "";
 }
 ```
 
-### 2.2. Модель ServiceRequest
+### ServiceRequest
 ```csharp
 public class ServiceRequest
 {
@@ -67,7 +92,6 @@ public class ServiceRequest
     public string Status { get; set; } = "Новая";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ClosedAt { get; set; }
-
     public int? EquipmentId { get; set; }
     public Equipment? Equipment { get; set; }
 }
@@ -75,111 +99,109 @@ public class ServiceRequest
 
 ---
 
-## 3. Конфигурация приложения
+## 5. Конфигурация приложения
 
-Основная конфигурация задаётся в `Program.cs`.
+В `Program.cs`:
 
-**InMemory DB:**
+### Подключение PostgreSQL:
 ```csharp
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("ServiceDeskDb"));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    options.UseNpgsql(connectionString);
+});
 ```
 
-**Swagger:**
+### Swagger:
 ```csharp
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 ```
 
----
-
-## 4. Требования к окружению
-
-- .NET SDK 9.0  
-- Любая IDE: VS 2022, Rider, VS Code  
-- Git (опционально)
+### Маршрутизация:
+```csharp
+app.MapControllers();
+```
 
 ---
 
-## 5. Запуск
+## 6. appsettings.json
 
-### CLI
+Пустой, базовый:
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
+```
+
+7. Настройки PostgreSQL находятся в **appsettings.Development.json**  
+(в локальной сборке Visual Studio — это используемый файл).
+
+---
+
+## 8. Запуск проекта
+
+### Через CLI:
 ```bash
 cd ServiceDesk.Api
 dotnet restore
 dotnet run
 ```
 
-Swagger:  
-`http://localhost:5xxx/swagger`
+API будет доступно по:
+- `https://localhost:7xxx`
+- `http://localhost:5xxx`
+
+Swagger:
+```
+/swagger
+```
 
 ---
 
-## 6. REST API: Equipment
+## 9. REST API: перечень эндпоинтов
 
-База:  
-`/api/equipment`
+### Equipment (`/api/equipment`)
+Метод | URL | Описание
+------|-----|---------
+GET | /api/equipment | Список оборудования
+GET | /api/equipment/{id} | Получить по Id
+POST | /api/equipment | Создать запись
+PUT | /api/equipment/{id} | Обновить запись
+DELETE | /api/equipment/{id} | Удалить запись
 
-### Примеры:
+---
 
-GET список:
-```json
-[
-  {
-    "id": 1,
-    "inventoryNumber": "PC-001",
-    "type": "ПК",
-    "room": "101",
-    "status": "Работает"
-  }
-]
-```
+### ServiceRequests (`/api/servicerequests`)
+Метод | URL | Описание
+------|-----|---------
+GET | /api/servicerequests | Список заявок
+GET | /api/servicerequests/{id} | Получить по Id
+POST | /api/servicerequests | Создать заявку
+PUT | /api/servicerequests/{id} | Обновить заявку
+DELETE | /api/servicerequests/{id} | Удалить заявку
 
-POST создание:
+---
+
+### Health (`/health`)
+Метод | URL | Описание
+------|-----|---------
+GET | /health | Проверка работы API
+
+---
+
+## 10. Пример ответа HealthController
+
 ```json
 {
-  "inventoryNumber": "PRN-010",
-  "type": "Принтер",
-  "room": "202",
-  "status": "Работает"
+  "status": "Healthy"
 }
 ```
 
-PUT обновление:
-```json
-{
-  "id": 1,
-  "inventoryNumber": "PC-001",
-  "type": "ПК",
-  "room": "101",
-  "status": "Не работает"
-}
-```
-
 ---
-
-## 7. Swagger / OpenAPI
-
-Доступен по `/swagger`.
-
----
-
-## 8. Возможные улучшения
-
-- CRUD для ServiceRequest  
-- Подключение реальной БД  
-- Миграции EF  
-- Dockerfile + docker-compose  
-- Авторизация и роли  
-- Логирование  
-
----
-
-## 9. Итоги
-
-Проект подходит для:
-
-- изучения REST API;
-- демонстрации EF Core;
-- проведения учебной практики по сопровождению ИС;
-- расширения до реального Service Desk приложения.
