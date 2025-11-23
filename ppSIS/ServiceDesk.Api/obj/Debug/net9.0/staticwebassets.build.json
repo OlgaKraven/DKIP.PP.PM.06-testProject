@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "STrfmHD41rADb18GYiSm1Eo9sA9TfHU/YeRLlwGzfKU=",
+  "Source": "ServiceDesk.Api",
+  "BasePath": "_content/ServiceDesk.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
